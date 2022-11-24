@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Categories {
+  Shop
+  Restaurants
+  Streets
+  Avenues
+  GovAgencies
+  Others
+}
+
+model Users {
+  userId         String          @id @default(auto()) @map("_id") @db.ObjectId
+  nickName       String          @unique
+  email          String          @unique
+  password       String          @unique
+  birthDate      DateTime
+  personLocation PersonLocation?
+
+  createdAt DateTime
+  updatedAt DateTime?
+}
+
+model PersonLocation {
+  persontLocationId String @id @default(auto()) @map("_id") @db.ObjectId
+  userLat           String
+  userLog           String
+  userAlt           String
+  userAccurancy     String
+
+  user   Users  @relation(fields: [userId], references: [userId])
+  userId String @unique @db.ObjectId
+
+  createdAt DateTime
+  updatedAt DateTime?
+}
+
+model Reports {
+  reportId            String           @id @default(auto()) @map("_id") @db.ObjectId
+  reportAbout         String
+  reportDescription   String
+  reportCategories    Categories[]
+  othersReactionAbout OthersReactions?
+
+  shortVideos ShortVideosURL?
+  photos      Json?
+  reportMood  Json?
+
+  reportLocation ReportLocation?
+
+  createdAt DateTime
+  updatedAt DateTime?
+}
+
+model OthersReactions {
+  otherReactionsId String @id @default(auto()) @map("_id") @db.ObjectId
+
+  awesome  Int @default(0)
+  happy    Int @default(0)
+  sad      Int @default(0)
+  scared   Int @default(0)
+  goodVibe Int @default(0)
+
+  report   Reports @relation(fields: [reportId], references: [reportId])
+  reportId String  @unique @db.ObjectId
+
+  createdAt DateTime
+  updatedAt DateTime?
+}
+
+model ShortVideosURL {
+  shortVideoUrlId String  @id @default(auto()) @map("_id") @db.ObjectId
+  firstShortUrl   String?
+  secondShortUrl  String?
+  thirdShortUrl   String?
+
+  reports  Reports? @relation(fields: [reportId], references: [reportId])
+  reportId String   @unique @db.ObjectId
+
+  userId    String
+  createdAt DateTime
+  updatedAt DateTime?
+}
+
+model ReportLocation {
+  reportLocationId String @id @default(auto()) @map("_id") @db.ObjectId
+  reportLat        String
+  reportLog        String
+  reportAccuracy   String
+  userId           String
+
+  report   Reports? @relation(fields: [reportId], references: [reportId])
+  reportId String   @unique @db.ObjectId
+
+  createdAt DateTime
+  updatedAt DateTime?
+}
